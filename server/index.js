@@ -1,10 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const userRoutes = require("./routes/userRoutes");
-const msgRoutes = require("./routes/messageRoutes");
+const userRoutes = require("./routes/user.routes");
+const msgRoutes = require("./routes/message.routes");
 require("dotenv").config();
 const socket = require("socket.io");
+const chatRoutes = require("./routes/chat.routes");
+const { jwtMiddleware } = require("./middleware/auth.middleware");
 
 const app = express();
 
@@ -12,7 +14,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", userRoutes);
-app.use("/api/messages", msgRoutes);
+app.use("/api/messages", jwtMiddleware, msgRoutes);
+app.use("/api/chat", jwtMiddleware, chatRoutes);
 
 mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,
@@ -30,22 +33,22 @@ const server = app.listen(process.env.PORT, () => {
 
 const io = socket(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: `http://localhost:3000`,
     credentials: true,
   },
 });
 
-global.onlineUsers = new Map();
+
 io.on("connection", (socket) => {
-  global.chatSocket = socket;
-  socket.on("add-user", (userId) => {
-    onlineUsers.set(userId, socket.id);
+  socket.on("join-chat", (room) => {
+    if (!socket.rooms.has('abc')) {
+      socket.join(room);
+    } 
   });
 
-  socket.on("send-msg", (data) => {
-    const sendUserSocket = onlineUsers.get(data.to);
-    if (sendUserSocket) {
-      socket.to(sendUserSocket).emit("msg-recieve", data.msg);
-    }
+  socket.on("new-message", (data) => {
+      socket.to(data.chat).emit("message-recieved", data);
   });
+
+
 });

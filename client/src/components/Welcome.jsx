@@ -1,16 +1,11 @@
-import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Robot from "../assets/robot.gif";
-export default function Welcome() {
-  const [userName, setUserName] = useState("");
-  useEffect(() => {
-    setUserName(JSON.parse(localStorage.getItem("webchat-user")).username);
-  }, []);
+export default function Welcome({name}) {
   return (
     <Container>
       <img src={Robot} alt="" />
       <h1>
-        Welcome, <span>{userName}!</span>
+        Welcome, <span>{name}!</span>
       </h1>
       <h3>Please select a chat to Start messaging.</h3>
     </Container>

@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
 import loader from "../assets/loader.gif";
-import { ToastContainer, toast } from 'react-toastify'
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from 'axios';
-import {Buffer} from "buffer";
-import { host, routes } from "../utils/routes"
-
+import axios from "axios";
+import { Buffer } from "buffer";
+import { host, routes } from "../utils/routes";
+import { useChat } from "../context/Chat";
 
 function Avatar() {
   const api = `https://api.multiavatar.com/4645646`;
@@ -15,6 +15,7 @@ function Avatar() {
   const [avatars, setAvatars] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAvatar, setSelectedAvatar] = useState(undefined);
+  const { user, setUser } = useChat();
   const toastOptions = {
     position: "bottom-right",
     autoClose: 8000,
@@ -23,81 +24,99 @@ function Avatar() {
     theme: "dark",
   };
 
-  useEffect( () => {
-    if (!localStorage.getItem('webchat-user'))
-      navigate("/login");
-  }, []);
-
+  const fetch = async () => {
+    const data = [];
+    for (let i = 0; i < 4; i++) {
+      const image = await axios.get(
+        `${api}/${Math.round(Math.random() * 1000)}`
+      );
+      const buffer = new Buffer(image.data);
+      data.push(buffer.toString("base64"));
+    }
+    setAvatars(data);
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    const data = [];
-    const fetch = async()=>{
-      for (let i = 0; i < 4; i++) {
-        const image = await axios.get(`${api}/${Math.round(Math.random() * 1000)}`);
-        const buffer = new Buffer(image.data);
-        data.push(buffer.toString("base64"));
-      }
-      setAvatars(data);
-      setIsLoading(false);
+     if(user) {
+      fetch();
     }
-    fetch();
   }, []);
 
-  const setProfilePicture = async ()=> {
-    if(selectedAvatar === undefined) {
-      toast.error("Avatar not selected.", toastOptions);
-    } else {
-      const user = JSON.parse(localStorage.getItem("webchat-user"));
-      const {data} = await axios.post(`${host}/${routes.set_avatar}/${user._id}`, {
-        image: avatars[selectedAvatar]
-      });
-      if(data.isSet) {
-        user.avatarImage = data.image;
-        user.isAvatarImageSet = true;
-        localStorage.setItem("webchat-user", JSON.stringify(user));
-        navigate("/");
-      } else{
-        toast.error("Please try again.", toastOptions);
+
+  const option = {
+    headers: {
+      Authorization: user?.token,
+    },
+  };
+
+  const setProfilePicture = async () => {
+    try {
+      if (selectedAvatar === undefined) {
+        toast.error("Avatar not selected.", toastOptions);
+      } else {
+        const { data } = await axios.post(
+          `${host}/${routes.set_avatar}/${user._id}`,
+          {
+            image: avatars[selectedAvatar],
+          },
+          option
+        );
+        if (data.isSet) {
+          user.avatarImage = data.image;
+          user.isAvatarImageSet = true;
+          setUser((user) => ({
+            ...user,
+            avatarImage: data.image,
+            isAvatarImageSet: true,
+          }));
+          navigate("/");
+        } else {
+          toast.error("Please try again.", toastOptions);
+        }
       }
+    } catch (err) {
+      toast.error("Something went wrong");
     }
-  }
+  };
 
   return (
     <>
-    {
-      isLoading ? (
+      {isLoading ? (
         <Container>
           <img src={loader} alt="loader" className="loader" />
         </Container>
-      ):(
+      ) : (
         <Container>
-        <div className="title-container">
-          <h1>Pick an Avatar as your profile picture</h1>
-        </div>
-        <div className="avatars">
-          {avatars.map((avatar, index) => {
-            return (
-              <div className={`avatar ${selectedAvatar === index ? "selected" : ""}`} key={index}>
-                <img
-                  src={`data:image/svg+xml;base64,${avatar}`}
-                  alt="avatar"
-                  key={avatar}
-                  onClick={() => setSelectedAvatar(index)}
-                />
-              </div>
-            );
-          })}
-        </div>
-        <button onClick={setProfilePicture} className="submit-btn">
-          Set as Profile Picture
-        </button>
-        <ToastContainer />
-      </Container>
-      )
-    }
-      
+          <div className="title-container">
+            <h1>Pick an Avatar as your profile picture</h1>
+          </div>
+          <div className="avatars">
+            {avatars.map((avatar, index) => {
+              return (
+                <div
+                  className={`avatar ${
+                    selectedAvatar === index ? "selected" : ""
+                  }`}
+                  key={index}
+                >
+                  <img
+                    src={`data:image/svg+xml;base64,${avatar}`}
+                    alt="avatar"
+                    key={avatar}
+                    onClick={() => setSelectedAvatar(index)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <button onClick={setProfilePicture} className="submit-btn">
+            Set as Profile Picture
+          </button>
+        </Container>
+      )}
     </>
-  )
+  );
 }
 
 const Container = styled.div`

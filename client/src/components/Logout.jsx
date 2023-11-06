@@ -2,19 +2,16 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { BiPowerOff } from "react-icons/bi";
 import styled from "styled-components";
-import axios from "axios";
-import { host, routes } from "../utils/routes";
-export default function Logout() {
+import { useChat } from "../context/Chat";
+export default function Logout({ socket }) {
   const navigate = useNavigate();
+  const { setUser, setChats, setCurrentChat } = useChat();
   const handleClick = async () => {
-    const id = await JSON.parse(
-      localStorage.getItem("webchat-user")
-    )._id;
-    const data = await axios.get(`${host}/${routes.logout}/${id}`);
-    if (data.status === 200) {
-      localStorage.clear();
-      navigate("/login");
-    }
+    setUser(null);
+    setChats([]);
+    setCurrentChat(null);
+    navigate("/login");
+    socket.current.disconnect();
   };
   return (
     <Button onClick={handleClick}>

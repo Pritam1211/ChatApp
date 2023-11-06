@@ -1,72 +1,42 @@
-import axios from 'axios';
-import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom';
-import { host, routes } from '../utils/routes';
-import Contacts from '../components/Contact';
-import Welcome from '../components/Welcome';
-import ChatContainer from '../components/ChatContainer';
-import { io } from "socket.io-client";
-import styled from 'styled-components';
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Contacts from "../components/Contact";
+import Welcome from "../components/Welcome";
+import ChatContainer from "../components/ChatContainer";
+import styled from "styled-components";
+import { useChat } from "../context/Chat";
+import {io} from "socket.io-client"
+import { host } from "../utils/routes";
 function Chat() {
-
-  const [contacts, setContacts] = useState([]);
-  const socket = useRef();
-  const [currentUser, setCurrentUser] = useState(undefined);
-  const [currentChat, setCurrentChat] = useState(undefined);
   const navigate = useNavigate();
-
-
-
+  const { user, currentChat } = useChat();
+  const socket = useRef();
   useEffect(() => {
-    if (currentUser) {
-      socket.current = io(host);
-      socket.current.emit("add-user", currentUser._id);
-    }
-  }, [currentUser]);
-
-  useEffect( () => {
-    if (!localStorage.getItem('webchat-user')) {
+    if (!user) {
       navigate("/login");
     } else {
-      setCurrentUser(
-        JSON.parse(
-          localStorage.getItem('webchat-user')
-        )
-      );
+      if (!user.isAvatarImageSet) {
+        navigate("/set_avatar");
+      } else {
+        socket.current = io(host);
+      }
     }
   }, []);
 
-  useEffect( () => {
-    const fetch = async()=>{
-      if (currentUser) {
-        if (currentUser.isAvatarImageSet) {
-          const data = await axios.get(`${host}/${routes.all_users}/${currentUser._id}`);
-          
-          setContacts(data.data);
-        } else {
-          navigate("/setAvatar");
-        }
-      }
-    }
-    fetch();
-  }, [currentUser]);
-
-  const handleChatChange = (contact) => {
-    setCurrentChat(contact);
-  }
-
   return (
     <>
-      <Container>
-        <div className="container">
-          <Contacts contacts={contacts} changeChat={handleChatChange} />
-          {currentChat === undefined ? (
-            <Welcome />
-          ) : (
-            <ChatContainer currentChat={currentChat} socket={socket} />
-          )}
-        </div>
-      </Container>
+      {user && (
+        <Container>
+          <div className="container">
+            <Contacts socket={socket} />
+            {currentChat ? (
+              <ChatContainer socket={socket} />
+            ) : (
+              <Welcome name={user.username} />
+            )}
+          </div>
+        </Container>
+      )}
     </>
   );
 }
@@ -91,4 +61,4 @@ const Container = styled.div`
     }
   }
 `;
-export default Chat
+export default Chat;

@@ -1,14 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import Logo from "../assets/logo.svg";
-import {ToastContainer, toast} from 'react-toastify'
+import { toast} from 'react-toastify'
 import "react-toastify/dist/ReactToastify.css";
 import axios from 'axios';
 import {host, routes} from "../utils/routes"
+import { useChat } from '../context/Chat';
 
 function Register() {
-
+  const { user } = useChat();
   const navigate = useNavigate();
 
   const [values, setValues] = useState({
@@ -20,10 +21,10 @@ function Register() {
 
 
   useEffect(() => {
-    if(localStorage.getItem("webchat-user")) {
+    if(user) {
       navigate("/");
     }
-  }, []);
+  }, [navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -31,8 +32,7 @@ function Register() {
       const { username, email, password } = values;
       const {data} = await axios.post(`${host}/${routes.register}`, {username,password,email});
       if(data.success){
-        localStorage.setItem("webchat-user", JSON.stringify(data.user));
-        navigate('/');
+        navigate('/login');
       } else {
         toast.error(data.msg, toastOptions);
       }
@@ -95,7 +95,6 @@ function Register() {
           <span>Already have an account? <Link to='/login'>Login</Link></span>
         </form>
       </FormContainer>
-      <ToastContainer />
     </>
   )
 }

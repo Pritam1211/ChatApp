@@ -3,7 +3,6 @@ import { BsEmojiSmileFill } from "react-icons/bs";
 import { IoMdSend } from "react-icons/io";
 import styled from "styled-components";
 import Picker from "emoji-picker-react";
-import axios from 'axios';
 
 export default function ChatInput({ handleSendMsg }) {
   const [msg, setMsg] = useState("");
@@ -12,7 +11,7 @@ export default function ChatInput({ handleSendMsg }) {
     setShowEmojiPicker(!showEmojiPicker);
   };
 
-  const handleEmojiClick = (event, emojiObject) => {
+  const handleEmojiClick = (emojiObject) => {
     let message = msg;
     message += emojiObject.emoji;
     setMsg(message);
@@ -28,13 +27,13 @@ export default function ChatInput({ handleSendMsg }) {
 
   return (
     <Container>
-      <div className="button-container">
+      <div className="buttonContainer">
         <div className="emoji">
           <BsEmojiSmileFill onClick={handleEmojiPickerhideShow} />
           {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick} />}
         </div>
       </div>
-      <form className="input-container" onSubmit={(event) => sendChat(event)}>
+      <form className="inputContainer" onSubmit={(event) => sendChat(event)}>
         <input
           type="text"
           placeholder="type your message here"
@@ -59,7 +58,7 @@ const Container = styled.div`
     padding: 0 1rem;
     gap: 1rem;
   }
-  .button-container {
+  .buttonContainer {
     display: flex;
     align-items: center;
     color: white;
@@ -71,35 +70,38 @@ const Container = styled.div`
         color: #ffff00c8;
         cursor: pointer;
       }
-      .emoji-picker-react {
+      .epr-main {
         position: absolute;
-        top: -350px;
+        top: -480px;
         background-color: #080420;
         box-shadow: 0 5px 10px #9a86f3;
         border-color: #9a86f3;
-        .emoji-scroll-wrapper::-webkit-scrollbar {
+        .epr-body::-webkit-scrollbar {
           background-color: #080420;
           width: 5px;
           &-thumb {
             background-color: #9a86f3;
           }
         }
-        .emoji-categories {
+        .epr-emoji-categories {
           button {
             filter: contrast(0);
           }
         }
-        .emoji-search {
+        .epr-emoji-category-label {
+          background-color: #080420;
+        }
+        .epr-search {
           background-color: transparent;
           border-color: #9a86f3;
         }
-        .emoji-group:before {
+        .epr-group:before {
           background-color: #080420;
         }
       }
     }
   }
-  .input-container {
+  .inputContainer {
     width: 100%;
     border-radius: 2rem;
     display: flex;

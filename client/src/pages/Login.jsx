@@ -1,14 +1,15 @@
-import React, {useEffect, useState} from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import styled from "styled-components";
 import Logo from "../assets/logo.svg";
-import {ToastContainer, toast} from 'react-toastify'
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from 'axios';
-import {host, routes} from "../utils/routes"
+import axios from "axios";
+import { host, routes } from "../utils/routes";
+import { useChat } from "../context/Chat";
 
 function Login() {
-
+  const { user, setUser } = useChat();
   const navigate = useNavigate();
 
   const [values, setValues] = useState({
@@ -17,24 +18,30 @@ function Login() {
   });
 
   useEffect(() => {
-    if(localStorage.getItem("webchat-user")) {
+    if (user) {
       navigate("/");
     }
-  }, []);
+  }, [user, navigate]);
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
-    if(handleValidation()) {
-      const { username, password } = values;
-      const {data} = await axios.post(`${host}/${routes.login}`, {username,password});
-      if(data.success){
-        localStorage.setItem("webchat-user", JSON.stringify(data.user));
-        navigate('/');
-      } else {
-        toast.error(data.msg, toastOptions);
+    try {
+      event.preventDefault();
+      if (handleValidation()) {
+        const { username, password } = values;
+        const { data } = await axios.post(`${host}/${routes.login}`, {
+          username,
+          password,
+        });
+        if (data.success) {
+          setUser(data.user);
+        } else {
+          toast.error(data.msg, toastOptions);    
+        }
       }
+    } catch (err) {
+      toast.error("Something went wrong", toastOptions);
     }
-  }
+  };
 
   const toastOptions = {
     position: "bottom-right",
@@ -47,16 +54,10 @@ function Login() {
   const handleValidation = () => {
     const { password, username } = values;
     if (password === "") {
-      toast.error(
-        "Username and password required",
-        toastOptions
-      );
+      toast.error("Username and password required", toastOptions);
       return false;
     } else if (username.length === 0) {
-      toast.error(
-        "Username and password required",
-        toastOptions
-      );
+      toast.error("Username and password required", toastOptions);
       return false;
     }
 
@@ -64,28 +65,39 @@ function Login() {
   };
 
   const handleChange = (event) => {
-    setValues({ ...values, [event.target.name]: event.target.value});
-  }
+    setValues({ ...values, [event.target.name]: event.target.value });
+  };
 
   return (
     <>
       <FormContainer>
-        <form onSubmit={event => handleSubmit(event)}>
-          <div className='brand'>
-            <img src={Logo} alt='logo' />
+        <form onSubmit={(event) => handleSubmit(event)}>
+          <div className="brand">
+            <img src={Logo} alt="logo" />
             <h1>WebChat</h1>
           </div>
-          <input type='text' placeholder='Username' name='username' onChange={e => handleChange(e)} min="3" />
-          <input type='password' placeholder='Password' name='password' onChange={e => handleChange(e)} />
-          <button type='submit'>Log In</button>
-          <span>Don't have an account? <Link to='/register'>Register</Link></span>
+          <input
+            type="text"
+            placeholder="Username"
+            name="username"
+            onChange={(e) => handleChange(e)}
+            min="3"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            name="password"
+            onChange={(e) => handleChange(e)}
+          />
+          <button type="submit">Log In</button>
+          <span>
+            Don't have an account? <Link to="/register">Register</Link>
+          </span>
         </form>
       </FormContainer>
-      <ToastContainer />
     </>
-  )
+  );
 }
-
 
 const FormContainer = styled.div`
   height: 100vh;
