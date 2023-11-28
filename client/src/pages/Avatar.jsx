@@ -8,6 +8,7 @@ import axios from "axios";
 import { Buffer } from "buffer";
 import { host, routes } from "../utils/routes";
 import { useChat } from "../context/Chat";
+import { getHeaders } from "../utils/chatHelper";
 
 function Avatar() {
   const api = `https://api.multiavatar.com/4645646`;
@@ -43,13 +44,6 @@ function Avatar() {
     }
   }, []);
 
-
-  const option = {
-    headers: {
-      Authorization: user?.token,
-    },
-  };
-
   const setProfilePicture = async () => {
     try {
       if (selectedAvatar === undefined) {
@@ -60,7 +54,7 @@ function Avatar() {
           {
             image: avatars[selectedAvatar],
           },
-          option
+          getHeaders(user.token)
         );
         if (data.isSet) {
           user.avatarImage = data.image;

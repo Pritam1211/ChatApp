@@ -6,3 +6,11 @@ export const getOtherUser = (arr, id) => {
     return arr[0];
   }
 }
+
+export const getHeaders = (token) => {
+  return {
+    headers: {
+      Authorization: token,
+    },
+  };
+}

@@ -16,5 +16,6 @@ export const routes = {
   createChat: "api/chat",
   otherUsers: "api/chat/other_users",
   editChatName: "api/chat/name",
+  getUser: "api/auth/info",
 
 }

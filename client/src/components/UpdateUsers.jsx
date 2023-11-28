@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { host, routes } from "../utils/routes";
 import { useChat } from "../context/Chat";
 import { toast } from "react-toastify";
+import { getHeaders } from "../utils/chatHelper";
 
 const UpdateUsers = ({ handleSubmit, mode }) => {
   const [users, setUsers] = useState([]);
@@ -20,17 +21,11 @@ const UpdateUsers = ({ handleSubmit, mode }) => {
     }
   };
 
-  const option = {
-    headers: {
-      Authorization: user.token,
-    },
-  };
-
   const fetchUsers = async () => {
     try {
       const { data } = await axios.get(
         `${host}/${routes.otherUsers}/${currentChat._id}`,
-        option
+        getHeaders(user.token)
       );
       if (data.success) {
         setUsers(data.users);
@@ -89,12 +84,16 @@ const UpdateUsers = ({ handleSubmit, mode }) => {
 };
 
 const Container = styled.div`
+  width: 100%;
   svg {
     font-size: 1.5rem;
     color: #ebe7ff;
   }
   form {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   .input {
     background-color: transparent;

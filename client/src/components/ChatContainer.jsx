@@ -6,7 +6,7 @@ import axios from "axios";
 import { host, routes } from "../utils/routes";
 import { useChat } from "../context/Chat";
 import { toast } from "react-toastify";
-import { getOtherUser } from "../utils/chatHelper";
+import { getHeaders, getOtherUser } from "../utils/chatHelper";
 import moment from "moment";
 import { Modal } from "antd";
 import { IoCloseCircleSharp } from "react-icons/io5";
@@ -26,17 +26,12 @@ function ChatContainer({ socket }) {
   const { user, currentChat, setChats, setCurrentChat } = useChat();
   const [items, setItems] = useState(null);
 
-  const option = {
-    headers: {
-      Authorization: user?.token,
-    },
-  };
 
   const fetchMessages = async () => {
     try {
       const { data } = await axios.get(
         `${host}/${routes.get_messages}/${currentChat._id}`,
-        option
+        getHeaders(user.token)
       );
       if (data.success) {
         setMessages(data.messages);
@@ -64,7 +59,7 @@ function ChatContainer({ socket }) {
         setArrivalMessage(data);
       }
     });
-    if (currentChat.admin === user._id) {
+    if (currentChat?.admin?._id === user?._id) {
       setItems([
         {
           label: <div onClick={() => setNameModal(true)}>Edit Group Name</div>,
@@ -75,12 +70,16 @@ function ChatContainer({ socket }) {
           key: "1",
         },
         {
-          label: <div onClick={openUserModal("Remove")}>Remove Member</div>,
+          label: <div onClick={() => openUserModal("Remove")}>Remove Member</div>,
           key: "2",
         },
         {
           label: <div onClick={() => setDetailModal(true)}>Group Detail</div>,
           key: "3",
+        },
+        {
+          label: <div onClick={() => deleteGroup()}>Delete Group</div>,
+          key: "4",
         },
       ]);
     } else {
@@ -92,6 +91,10 @@ function ChatContainer({ socket }) {
         {
           label: <div onClick={() => setDetailModal(true)}>Group Detail</div>,
           key: "1",
+        },
+        {
+          label: <div onClick={() => exitGroup()}>Exist Group</div>,
+          key: "2",
         },
       ]);
     }
@@ -106,7 +109,7 @@ function ChatContainer({ socket }) {
           chatId: currentChat._id,
           message: msg,
         },
-        option
+        getHeaders(user.token)
       );
       if (data?.success) {
         const msgs = [...messages, data.message];
@@ -129,9 +132,9 @@ function ChatContainer({ socket }) {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSubmit = async (users, e) => {
+  const handleSubmit = async (users, e=null) => {
     try {
-      e.preventDefault();
+      if(e) e.preventDefault();
       let url =
         updateUserMode === "Add" ? routes.addMember : routes.removeMember;
       const { data } = await axios.put(
@@ -139,7 +142,7 @@ function ChatContainer({ socket }) {
         {
           users: users,
         },
-        option
+        getHeaders(user.token)
       );
       if (data?.success) {
         setCurrentChat(data.chat);
@@ -154,6 +157,34 @@ function ChatContainer({ socket }) {
     }
   };
 
+  const exitGroup = async () => {
+    try {
+      const { data } = await axios.put(`${host}/api/chat/exit_group/${currentChat._id}`,{}, getHeaders(user.token));
+      if(data?.success) {
+        setChats((chats) =>
+          chats.filter((chat) => chat._id !== currentChat._id)
+        );
+        setCurrentChat(null);
+      }
+    } catch(err) {
+      toast.error("Something went wrong");
+    }
+  }
+
+  const deleteGroup = async () => {
+    try {
+      const { data } = await axios.delete(`${host}/api/chat/${currentChat._id}`, getHeaders(user.token));
+      if(data?.success) {
+        setChats((chats) =>
+          chats.filter((chat) => chat._id !== currentChat._id)
+        );
+        setCurrentChat(null);
+      }
+    } catch(err) {
+      toast.error("Something went wrong");
+    }
+  }
+
   const editName = async (e) => {
     try {
       e.preventDefault();
@@ -162,7 +193,7 @@ function ChatContainer({ socket }) {
         {
           name: groupName,
         },
-        option
+        getHeaders(user.token)
       );
       if (data?.success) {
         setCurrentChat(data.chat);

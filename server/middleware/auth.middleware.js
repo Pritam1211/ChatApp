@@ -7,6 +7,6 @@ exports.jwtMiddleware = async (req,res,next) => {
     next();
   } catch(err) {
     console.log(err);
-    return res.status(200).json({success: false, msg: "Permission denied"})
+    return res.status(400).json({success: false, msg: "Permission denied"})
   }
 }

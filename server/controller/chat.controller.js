@@ -1,4 +1,5 @@
 const chatModel = require("../model/chat.model");
+const messageModel = require("../model/message.model");
 const userModel = require("../model/user.model");
 
 exports.createChat = async (req, res) => {
@@ -39,7 +40,7 @@ exports.createGroupChat = async (req, res) => {
     if (users.length < 2) {
       return res
         .status(400)
-        .json({ success: false, message: "User sholud be more than 2" });
+        .json({ success: false, msg: "User sholud be more than 2" });
     }
 
     const data = {
@@ -176,3 +177,39 @@ exports.editGroupName = async (req, res) => {
     return res.status(500).json({ success: false, msg: err.message|| err });
   }
 };
+
+exports.exitGroup = async(req, res) => {
+  try {
+    const userId = req.user._id;
+    const chatId = req.params.id;
+    const removed = await chatModel.findByIdAndUpdate(
+      chatId,
+      {
+        $pull: { users: userId },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (removed) {
+      return res.status(200).json({ success: true });
+    }
+  } catch (err) {
+    console.log("(exitGroup) chat.controller.js Err =>", err);
+    return res.status(500).json({ success: false, msg: err.message|| err });
+  }
+}
+
+exports.deleteGroup = async(req, res) => {
+  try {
+    const userId = req.user._id;
+    const chatId = req.params.id;
+    await chatModel.findByIdAndDelete(chatId);
+    await messageModel.deleteMany({chat: chatId});
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.log("(exitGroup) chat.controller.js Err =>", err);
+    return res.status(500).json({ success: false, msg: err.message|| err });
+  }
+}

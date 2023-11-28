@@ -5,7 +5,7 @@ import { useChat } from "../context/Chat";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { host, routes } from "../utils/routes";
-import { getOtherUser } from "../utils/chatHelper";
+import { getHeaders, getOtherUser } from "../utils/chatHelper";
 import { FaSearch } from "react-icons/fa";
 import { IoCloseCircleSharp } from "react-icons/io5";
 import { Modal } from "antd";
@@ -19,14 +19,9 @@ export default function Contacts({socket}) {
   const [groupName, setGroupName] = useState("");
   const [groupUser, setGroupUser] = useState([]);
 
-  const option = {
-    headers: {
-      Authorization: user?.token,
-    },
-  };
   const fetchChats = async () => {
     try {
-      const { data } = await axios.get(`${host}/${routes.getChats}`, option);
+      const { data } = await axios.get(`${host}/${routes.getChats}`, getHeaders(user.token));
       if (data?.success) {
         setChats(data.chats);
       }
@@ -42,7 +37,7 @@ export default function Contacts({socket}) {
 
   const fetchAllUsers = async () => {
     try {
-      const { data } = await axios.get(`${host}/${routes.all_users}`, option);
+      const { data } = await axios.get(`${host}/${routes.all_users}`, getHeaders(user.token));
       if (data.success) {
         setAllUsers(data.users);
         setUserModal(true);
@@ -72,7 +67,7 @@ export default function Contacts({socket}) {
         {
           user: chat._id,
         },
-        option
+        getHeaders(user.token)
       );
 
       if (data.success) {
@@ -110,7 +105,7 @@ export default function Contacts({socket}) {
         users: [...groupUser, user._id],
         name: groupName,
         avatarImage: buffer.toString("base64")
-      }, option);
+      }, getHeaders(user.token));
       if(data?.success) {
         setCurrentChat(data.chat)
         setChats([data.chat, ...chats]);

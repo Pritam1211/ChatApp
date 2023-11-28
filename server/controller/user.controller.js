@@ -98,4 +98,20 @@ exports.allUsers = async (req, res) => {
   }
 };
 
+exports.getUser = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.params.id).select([
+      "email",
+      "username",
+      "avatarImage",
+      "_id",
+    ]);
+    if(user) return res.status(200).json({ success: true, user });
+    else return res.status(200).json({ success: false, msg: "User not found" });
+  } catch (err) {
+    console.log("(getUser) user.controller.js Err =>", err);
+    return res.status(500).json({ success: false, msg: err.message || err });
+  }
+};
+
 

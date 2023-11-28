@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Contacts from "../components/Contact";
 import Welcome from "../components/Welcome";
@@ -6,22 +6,23 @@ import ChatContainer from "../components/ChatContainer";
 import styled from "styled-components";
 import { useChat } from "../context/Chat";
 import {io} from "socket.io-client"
-import { host } from "../utils/routes";
+import { host, routes } from "../utils/routes";
+import axios from "axios";
 function Chat() {
   const navigate = useNavigate();
-  const { user, currentChat } = useChat();
+  const { user, currentChat, setUser } = useChat();
   const socket = useRef();
+
   useEffect(() => {
-    if (!user) {
-      navigate("/login");
-    } else {
+    if (user) {
       if (!user.isAvatarImageSet) {
         navigate("/set_avatar");
       } else {
         socket.current = io(host);
       }
     }
-  }, []);
+    // eslint-disable-next-line
+  }, [user]);
 
   return (
     <>

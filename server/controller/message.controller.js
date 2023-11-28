@@ -25,7 +25,7 @@ exports.addMessage = async (req, res) => {
       chat: chatId
     });
     const resp = await messageModel.findById(data._id).populate("sender", "_id username avatarImage");
-    if (data) return res.status(200).json({ success: true, message: resp });
+    if (data) return res.status(200).json({ success: true, msg: resp });
   } catch (err) {
     console.log("(addMessages) chat.controller.js Err =>", err);
     return res.status(500).json({ success: false, msg: err.message || err });
