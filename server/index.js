@@ -7,11 +7,14 @@ require("dotenv").config();
 const socket = require("socket.io");
 const chatRoutes = require("./routes/chat.routes");
 const { jwtMiddleware } = require("./middleware/auth.middleware");
+const path = require('path');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use(express.static(path.resolve(__dirname, "../client/build")));
 
 app.use("/api/auth", userRoutes);
 app.use("/api/messages", jwtMiddleware, msgRoutes);
