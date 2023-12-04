@@ -12,7 +12,7 @@ const ChatProvider = ({children}) => {
   
   const verifyUser = async(id, token) => {
     try {
-      const { data } = await axios.get(`${host}/${routes.getUser}/${user._id}`, {
+      const { data } = await axios.get(`${host}/${routes.getUser}/${id}`, {
         headers: {
           Authorization: token,
         },
@@ -30,7 +30,7 @@ const ChatProvider = ({children}) => {
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("chat-user"));
     if(data && data._id) {
-      verifyUser(data._id);
+      verifyUser(data._id, data.token);
       setUser(data);
     }
   }, []);

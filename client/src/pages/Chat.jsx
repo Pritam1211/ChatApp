@@ -6,11 +6,11 @@ import ChatContainer from "../components/ChatContainer";
 import styled from "styled-components";
 import { useChat } from "../context/Chat";
 import {io} from "socket.io-client"
-import { host, routes } from "../utils/routes";
-import axios from "axios";
+import { host } from "../utils/routes";
+
 function Chat() {
   const navigate = useNavigate();
-  const { user, currentChat, setUser } = useChat();
+  const { user, currentChat } = useChat();
   const socket = useRef();
 
   useEffect(() => {
@@ -20,6 +20,8 @@ function Chat() {
       } else {
         socket.current = io(host);
       }
+    } else {
+      navigate('/login');
     }
     // eslint-disable-next-line
   }, [user]);

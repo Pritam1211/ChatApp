@@ -6,6 +6,7 @@ import Chat from "./pages/Chat";
 import Avatar from "./pages/Avatar";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+
 function App() {
   return (
     <>
