@@ -12,7 +12,8 @@ const path = require('path');
 const app = express();
 
 app.use(cors({
-  origin: 'https://chat-app-coral-eta.vercel.app'
+  credentials: true,
+  origin: ["https://chat-app-coral-eta.vercel.app","https://chat-app-pritam-gaikwads-projects.vercel.app", "https://chat-app-git-main-pritam-gaikwads-projects.vercel.app"]
 }));
 
 app.use(express.json());
